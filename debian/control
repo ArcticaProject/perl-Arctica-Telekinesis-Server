@@ -1,0 +1,53 @@
+Source: libarctica-telekinesis-server-perl
+Section: perl
+Priority: optional
+Build-Depends:
+ cdbs,
+ debhelper (>= 9),
+Build-Depends-Indep:
+ perl (>= 5.8.0),
+Maintainer: Arctica Project Developers <devs@lists.arctica-project.org>
+Uploaders:
+ Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+Homepage: https://arctica-project.org/
+Vcs-Git: https://github.com/ArcticaProject/perl-Arctica-Telekinesis-Server
+Vcs-Browser: https://github.com/ArcticaProject/perl-Arctica-Telekinesis-Server
+Standards-Version: 3.9.8
+
+Package: libarctica-telekinesis-server-perl
+Architecture: all
+Depends:
+ ${perl:Depends},
+ ${misc:Depends},
+Description: Arctica Telekinesis Server
+ The Arctica Project brings forth a remote computing framework of
+ enterprise grade and quality. The Arctica Framework is a highly
+ modularized and thus pluggable for developing alls sort of remote
+ services.
+ .
+ The Arctica Telekinesis framework is a solution through which a visual
+ application pair is able to run with one part on the remote desktop
+ server and one part on the remote desktop client, while they visually
+ appear to the end user as one application.
+ .
+ This package provides the Server module for Arctica Telekinesis.
+
+Package: arctica-telekinesis-server
+Architecture: all
+Depends:
+ ${perl:Depends},
+ ${misc:Depends},
+ libarctica-telekinesis-server-perl (= ${binary:Version}),
+Description: Arctica Telekinesis Server
+ The Arctica Project brings forth a remote computing framework of
+ enterprise grade and quality. The Arctica Framework is a highly
+ modularized and thus pluggable for developing alls sort of remote
+ services.
+ .
+ The Arctica Telekinesis framework is a solution through which a visual
+ application pair is able to run with one part on the remote desktop
+ server and one part on the remote desktop client, while they visually
+ appear to the end user as one application.
+ .
+ This package provides the standalone Arctica Telekinesis Server
+ executable.
