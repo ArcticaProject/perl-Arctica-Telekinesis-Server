@@ -1,5 +1,5 @@
 NAME
-    Arctica::Telekinesis::Server - Core Perl modules for the Arctica Framework
+    Arctica::Telekinesis::Server - Server implementation of Arctica Telekinesis
 
 SYNOPSIS
       use Arctica::Telekinesis::Server;
