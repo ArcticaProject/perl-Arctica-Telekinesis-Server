@@ -19,7 +19,7 @@ Architecture: all
 Depends:
  ${perl:Depends},
  ${misc:Depends},
-Description: Arctica Telekinesis Server
+Description: Arctica Telekinesis Server (Perl module)
  The Arctica Project brings forth a remote computing framework of
  enterprise grade and quality. The Arctica Framework is a highly
  modularized and thus pluggable for developing alls sort of remote
@@ -38,7 +38,7 @@ Depends:
  ${perl:Depends},
  ${misc:Depends},
  libarctica-telekinesis-server-perl (= ${binary:Version}),
-Description: Arctica Telekinesis Server
+Description: Arctica Telekinesis Server (standalone executable)
  The Arctica Project brings forth a remote computing framework of
  enterprise grade and quality. The Arctica Framework is a highly
  modularized and thus pluggable for developing alls sort of remote
