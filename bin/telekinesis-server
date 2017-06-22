@@ -63,14 +63,14 @@ use Data::Dumper;
 use Arctica::Core::eventInit qw(genARandom BugOUT);
 use Arctica::Core::JABus::Socket;
 use Arctica::Telekinesis::Server;
-#use POSIX;daemonize();
+use POSIX;daemonize();
 
 my $ACO = Arctica::Core::eventInit->new({
 	app_name=>'telekinesis-server',
 	app_class =>'telekinesis-core',
 	app_version=>'0.0.1.1'});
 
-my $TeKiServer = Arctica::Telekinesis::Core::Server->new($ACO);
+my $TeKiServer = Arctica::Telekinesis::Server->new($ACO);
 
 
 $TeKiServer->{'socks'}{'local'} = Arctica::Core::JABus::Socket->new($ACO,{
@@ -81,8 +81,8 @@ $TeKiServer->{'socks'}{'local'} = Arctica::Core::JABus::Socket->new($ACO,{
 			appreg => sub {$TeKiServer->_app_reg(@_)},
 			appinit => sub {$TeKiServer->_app_init(@_)},
 			appctrl => \&teki_server2c_appctrl,
-#			srvcrq => \&some_sub,
-#			qvdcmd => \&some_sub,
+			srvcrq => \&my_Own_Sub2,
+			qvdcmd => \&my_Own_Sub2,
 	},
 
 });
@@ -91,7 +91,7 @@ $TeKiServer->{'socks'}{'local'} = Arctica::Core::JABus::Socket->new($ACO,{
 
 $TeKiServer->{'socks'}{'remote'} = Arctica::Core::JABus::Socket->new($ACO,{
 	type	=>	"unix",
-	destination =>	"local",# FIXME! (change to remote!!!)
+	destination =>	"local",# FIX ME! (change to remote!!!)
 	is_server => 1,
 	handle_in_dispatch => {
 			srvcneg => sub {$TeKiServer->c2s_service_neg(@_)},
@@ -110,14 +110,20 @@ $ACO->{'Glib'}{'MainLoop'}->run;
 
 sub teki_server2c_appctrl {
 	my $declared_id = $_[2]->server_get_client_info($_[1],'declared_id');
-#	print "APPCTRL:\t$declared_id->{'self_aID'}\n\n",Dumper($declared_id);
+	print "APPCTRL:\t$declared_id->{'self_aID'}\n\n",Dumper($declared_id);
 	$TeKiServer->tekicli_send('appctrl',{
 		appid => $declared_id->{'self_aID'},
 		ctrldata => $_[0],
 	});
 }
 
+sub my_Own_Sub1 {
 
+}
+
+sub my_Own_Sub2 {
+
+}
 
 sub daemonize {
 	fork and exit;
