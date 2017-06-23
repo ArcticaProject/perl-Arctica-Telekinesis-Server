@@ -32,12 +32,14 @@ Description: Arctica Telekinesis Server (Perl module)
  .
  This package provides the Server module for Arctica Telekinesis.
 
-Package: arctica-telekinesis-server
+Package: telekinesis-server
 Architecture: all
 Depends:
  ${perl:Depends},
  ${misc:Depends},
  libarctica-telekinesis-server-perl (= ${binary:Version}),
+Breaks: arctica-telekinesis-server,
+Replaces: arctica-telekinesis-server,
 Description: Arctica Telekinesis Server (standalone executable)
  The Arctica Project brings forth a remote computing framework of
  enterprise grade and quality. The Arctica Framework is a highly
