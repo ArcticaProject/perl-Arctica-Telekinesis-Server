@@ -39,6 +39,7 @@ Depends:
  ${perl:Depends},
  ${misc:Depends},
  libarctica-telekinesis-server-perl (= ${binary:Version}),
+ libarctica-core-jabus-socket-perl,
 Breaks: arctica-telekinesis-server,
 Replaces: arctica-telekinesis-server,
 Description: Arctica Telekinesis Server (standalone executable)
