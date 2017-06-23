@@ -124,7 +124,7 @@ sub c2s_service_neg {
 		BugOUT(9,"TIME TO ACTIVATE THIS STUFF!");
 		$self->{'status'}{'active'} = 1;
 		if ($self->{'running_apps'}) {
-			foreach my $rapp_id (sort (keys $self->{'running_apps'})) {
+			foreach my $rapp_id (sort (keys %{$self->{'running_apps'}})) {
 				print "\t\t$rapp_id\n";
 				$self->tekicli_send('csappreg',$rapp_id);
 			}
@@ -231,7 +231,7 @@ sub _app_reg {
 		if ($data->{'service_req'}) {
 			my %s_providing;
 			my %s_missing;
-			foreach my $key (keys $data->{'service_req'}) {
+			foreach my $key (keys %{$data->{'service_req'}}) {
 				if ($key =~ /^([a-z]{4,24})$/) {
 					my $service_name = $1;
 					$self->{'running_apps'}{$declared_id->{'self_aID'}}{'service_req'} = $service_name;
