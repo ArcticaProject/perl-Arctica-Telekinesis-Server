@@ -1,0 +1,64 @@
+2017-06-23 18:59:49 +0200 Mike Gabriel (647776b)
+
+	* bump from version 0.0.0.1 to 0.1.0.0 to supercede the Telekinesis
+          packages found on packages.x2go.org. (HEAD -> master,
+          origin/master, gh-arctica/master)
+
+2017-06-23 18:48:07 +0200 Mike Gabriel (ac9ec06)
+
+	* lib/Arctica/Telekinesis/Server.pm: Avoid keys on references.
+          Forbidden in Debian 9's Perl version anyway.
+
+2017-06-23 13:54:52 +0200 Mike Gabriel (905fd39)
+
+	* debian/control: Add D (telekinesis-server):
+          libarctica-core-jabus-socket-perl.
+
+2017-06-23 13:41:22 +0200 Mike Gabriel (823625e)
+
+	* debian/control: Add D (libarctica-telekinesis-server):
+          libarctica-core-perl.
+
+2017-06-23 13:26:41 +0200 Mike Gabriel (e63096b)
+
+	* debian/*: Rename bin:package arctica-telekinesis-server to
+          telekinesis-server.
+
+2017-06-23 00:01:06 +0200 Mike Gabriel (e2687c4)
+
+	* update telekinesis-server, development state dating 20170619
+          (Arctica Browser)
+
+2017-06-22 23:59:04 +0200 Mike Gabriel (7ac7916)
+
+	* Make telekinesis-server executable.
+
+2017-06-22 23:13:58 +0200 Mike Gabriel (5db24f0)
+
+	* executables go to /usr/bin
+
+2017-06-21 13:03:44 +0200 Mike Gabriel (807ada0)
+
+	* debian/control: Fix duplicate SYNOPSIS fields. (origin/development,
+          origin/HEAD, development)
+
+2016-10-20 15:14:03 +0200 Mike Gabriel (d74be80)
+
+	* README: Fix title text of Perl package.
+
+2016-10-20 15:12:00 +0200 Mike Gabriel (ed3a7a9)
+
+	* Debianize perl-Arctica-Telekinesis-Server.
+
+2016-10-20 15:11:25 +0200 Mike Gabriel (fb10973)
+
+	* Add formal stuff for Perl packages.
+
+2016-10-20 15:10:57 +0200 Mike Gabriel (f55ef92)
+
+	* Add Version.pm file.
+
+2016-10-20 14:31:41 +0200 GZNGET FOSS Team (9fc29b2)
+
+	* Initial commit
+
