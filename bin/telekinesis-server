@@ -1,0 +1,137 @@
+#!/usr/bin/perl -T
+################################################################################
+#          _____ _
+#         |_   _| |_  ___
+#           | | | ' \/ -_)
+#           |_| |_||_\___|
+#                   _   _             ____            _           _
+#    / \   _ __ ___| |_(_) ___ __ _  |  _ \ _ __ ___ (_) ___  ___| |_
+#   / _ \ | '__/ __| __| |/ __/ _` | | |_) | '__/ _ \| |/ _ \/ __| __|
+#  / ___ \| | | (__| |_| | (_| (_| | |  __/| | | (_) | |  __/ (__| |_
+# /_/   \_\_|  \___|\__|_|\___\__,_| |_|   |_|  \___// |\___|\___|\__|
+#                                                  |__/
+#          The Arctica Modular Remote Computing Framework
+#
+################################################################################
+#
+# Copyright (C) 2015-2016 The Arctica Project 
+# http://arctica-project.org/
+#
+# This code is dual licensed: strictly GPL-2 or AGPL-3+
+#
+# GPL-2
+# -----
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the
+# Free Software Foundation, Inc.,
+#
+# 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# AGPL-3+
+# -------
+# This programm is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This programm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program; if not, write to the
+# Free Software Foundation, Inc.,
+# 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# Copyright (C) 2015-2016 Guangzhou Nianguan Electronics Technology Co.Ltd.
+#                         <opensource@gznianguan.com>
+# Copyright (C) 2015-2016 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+#
+################################################################################
+use strict;
+use Data::Dumper;
+use Arctica::Core::eventInit qw(genARandom BugOUT);
+use Arctica::Core::JABus::Socket;
+use Arctica::Telekinesis::Server;
+use POSIX;daemonize();
+
+my $ACO = Arctica::Core::eventInit->new({
+	app_name=>'telekinesis-server',
+	app_class =>'telekinesis-core',
+	app_version=>'0.0.1.1'});
+
+my $TeKiServer = Arctica::Telekinesis::Server->new($ACO);
+
+
+$TeKiServer->{'socks'}{'local'} = Arctica::Core::JABus::Socket->new($ACO,{
+	type	=>	"unix",
+	destination =>	"local",
+	is_server => 1,
+	handle_in_dispatch => {
+			appreg => sub {$TeKiServer->_app_reg(@_)},
+			appinit => sub {$TeKiServer->_app_init(@_)},
+			appctrl => \&teki_server2c_appctrl,
+			srvcrq => \&my_Own_Sub2,
+			qvdcmd => \&my_Own_Sub2,
+	},
+
+});
+
+
+
+$TeKiServer->{'socks'}{'remote'} = Arctica::Core::JABus::Socket->new($ACO,{
+	type	=>	"unix",
+	destination =>	"local",# FIX ME! (change to remote!!!)
+	is_server => 1,
+	handle_in_dispatch => {
+			srvcneg => sub {$TeKiServer->c2s_service_neg(@_)},
+			appinit => sub {$TeKiServer->app_init(@_)},
+	},
+	hooks => {
+		'on_server_client_auth_ok' => sub {$TeKiServer->tekicli_socauth_ok(@_)},
+		'on_server_terminate_client' => sub {$TeKiServer->tekicli_lostconn(@_)},
+	},
+});
+
+$TeKiServer->tmp_socket_info($TeKiServer->{'socks'}{'local'}->server_get_socket_id,$TeKiServer->{'socks'}{'remote'}->server_get_socket_id);
+
+
+$ACO->{'Glib'}{'MainLoop'}->run;
+
+sub teki_server2c_appctrl {
+	my $declared_id = $_[2]->server_get_client_info($_[1],'declared_id');
+	print "APPCTRL:\t$declared_id->{'self_aID'}\n\n",Dumper($declared_id);
+	$TeKiServer->tekicli_send('appctrl',{
+		appid => $declared_id->{'self_aID'},
+		ctrldata => $_[0],
+	});
+}
+
+sub my_Own_Sub1 {
+
+}
+
+sub my_Own_Sub2 {
+
+}
+
+sub daemonize {
+	fork and exit;
+	POSIX::setsid();
+	fork and exit;
+	umask 0;
+	chdir '/';
+	close STDIN;
+	close STDOUT;
+	close STDERR;
+}
