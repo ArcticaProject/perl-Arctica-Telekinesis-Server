@@ -105,7 +105,7 @@ sub c2s_service_neg {
 	my $jdata = $_[1];
 	my $sclient_id = $_[2];
 	my $bself = $_[3];
-	print "SRVCNEG:\t",Dumper($jdata),"\n";
+#	print "SRVCNEG:\t",Dumper($jdata),"\n";
 	if ($jdata->{'step'} eq 1) {
 # Client told us which services it can provide,
 # We check if we're able to play ball... if server side is version match we're all good.
@@ -125,7 +125,7 @@ sub c2s_service_neg {
 		$self->{'status'}{'active'} = 1;
 		if ($self->{'running_apps'}) {
 			foreach my $rapp_id (sort (keys %{$self->{'running_apps'}})) {
-				print "\t\t$rapp_id\n";
+#				print "\t\t$rapp_id\n";
 				$self->tekicli_send('csappreg',$rapp_id);
 			}
 		}
@@ -137,7 +137,7 @@ sub c2s_service_neg {
 sub tekicli_send {
 	my $self = $_[0];
 	if ($self->{'TeKiCli'}{'sclient_id'} and $self->{'TeKiCli'}{'_send2sock'}) {
-		print "\t\t1:\t$_[1]\n\t\t2:$_[2]\n";
+#		print "\t\t1:\t$_[1]\n\t\t2:$_[2]\n";
 		$self->{'TeKiCli'}{'_send2sock'}->server_send($self->{'TeKiCli'}{'sclient_id'},$_[1],$_[2]);
 	}
 }
@@ -147,9 +147,9 @@ sub tekicli_socauth_ok {
 	my $self = $_[0];
 	my $sclient_id = $_[1];
 	my $bself = $_[2];
-	print "CLI AUTH\t$sclient_id\n";
+#	print "CLI AUTH\t$sclient_id\n";
 	my $declared_id = $bself->server_get_client_info($sclient_id,'declared_id');
-	if (($declared_id->{'app_name'} eq "telekinesis-client") and ($declared_id->{'app_class'} eq "noclass")) {# FIXME! CHANGE noclass TO telekinesis-core after finding and fixing  the root cause which is probably where we inititally set this stuff....
+	if (($declared_id->{'app_name'} =~ /telekinesis-client/) and ($declared_id->{'app_class'} eq "noclass")) {# FIXME! CHANGE noclass TO telekinesis-core after finding and fixing  the root cause which is probably where we inititally set this stuff....
 		BugOUT(8,"TeKi Server tekicli_socauth_ok->TeKi-Cli Staring Conn Init stuff....");
 		if ($self->{'TeKiCli'}{'sclient_id'}) {
 			$self->_tekicli_clean_oldcliconn($self->{'TeKiCli'}{'sclient_id'}, $bself);
@@ -192,7 +192,7 @@ sub tekicli_lostconn {
 	my $self = $_[0];
 	my $sclient_id = $_[1];
 	my $bself = $_[2];
-	print "YAY WE LOST CLIENT:\t$sclient_id\n";
+#	print "YAY WE LOST CLIENT:\t$sclient_id\n";
 	if ($sclient_id eq $bself->{'TeKiCli'}{'sclient_id'}) {
 		BugOUT(9,"TeKi Server tekicli_lostconn->LOST ACTIVE CLIENT?");
 		$self->_tekicli_clean_oldcliconn($sclient_id, $bself);
@@ -205,7 +205,7 @@ sub tekicli_lostconn {
 sub app_init {# FIXME! Are we still using this one?
 	my $self = $_[0];
 	my $app_id = $_[1];
-	print "GOT APP INIT:\t$app_id\n\t[",$self->{'running_apps'}{$app_id}{'scli_id'},"]\n";
+#	print "GOT APP INIT:\t$app_id\n\t[",$self->{'running_apps'}{$app_id}{'scli_id'},"]\n";
 	if ($self->{'running_apps'}{$app_id}{'scli_id'}) {
 		warn("ASK APP TO INIT!");
 		$self->{'socks'}{'local'}->server_send("$self->{'running_apps'}{$app_id}{'scli_id'}",'appinit',"HELLO")
@@ -219,7 +219,7 @@ sub _app_reg {
 	my $bself = $_[3];
 	my $declared_id = $bself->server_get_client_info($sclient_id,'declared_id');
 	if ($declared_id->{'app_class'} eq "noclass") {# FIXME! CHANGE noclass TO tekiapp after finding and fixing  the root cause which is probably where we inititally set this stuff....
-		print "APPREG:\t",Dumper($declared_id),"\n";
+#		print "APPREG:\t",Dumper($declared_id),"\n";
 		if ($self->{'running_apps'}{$declared_id->{'self_aID'}}) {
 			BugOUT(8,"TeKi Server _app_reg-> Previously registered");
 #			If previously registered.... remove server and client side instances.
@@ -246,10 +246,10 @@ sub _app_reg {
 		}
 
 		if ($self->{'status'}{'active'} eq 1) {
-			print "241\tACTIVE!?\n";
+#			print "241\tACTIVE!?\n";
 			$self->tekicli_send('csappreg',$declared_id->{'self_aID'});
 		} else {
-			print "243\tNOT!!! ACTIVE!?\n";
+#			print "243\tNOT!!! ACTIVE!?\n";
 		}
 
 	} else {
