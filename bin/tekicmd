@@ -1,0 +1,176 @@
+#!/usr/bin/perl -T
+################################################################################
+#          _____ _
+#         |_   _| |_  ___
+#           | | | ' \/ -_)
+#           |_| |_||_\___|
+#                   _   _             ____            _           _
+#    / \   _ __ ___| |_(_) ___ __ _  |  _ \ _ __ ___ (_) ___  ___| |_
+#   / _ \ | '__/ __| __| |/ __/ _` | | |_) | '__/ _ \| |/ _ \/ __| __|
+#  / ___ \| | | (__| |_| | (_| (_| | |  __/| | | (_) | |  __/ (__| |_
+# /_/   \_\_|  \___|\__|_|\___\__,_| |_|   |_|  \___// |\___|\___|\__|
+#                                                  |__/
+#          The Arctica Modular Remote Computing Framework
+#
+################################################################################
+#
+# Copyright (C) 2015-2017 The Arctica Project
+# http://http://arctica-project.org/
+#
+# This code is licensed under AGPL-3+.
+#
+# AGPL-3+
+# -------
+# This programm is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This programm is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program; if not, write to the
+# Free Software Foundation, Inc.,
+# 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# Copyright (C) 2015-2017 Guangzhou Nianguan Electronics Technology Co.Ltd.
+#                         <opensource@gznianguan.com>
+# Copyright (C) 2015-2017 Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+#
+#
+# Note: As this project is licensed under AGPL-3+, all linked-in
+#       shared libraries derived from the Arctica Project must be
+#       considered as licensed under AGPL-3+ in this context, too
+#       (they are normally dual licensed under GPL-2 or AGPL-3+).
+#
+#       Please consider this, when offering a modified version of
+#       Arctica Browser as a serivce. To comply with AGPL-3+, you have
+#       to make the modified source code of all components of Arctica
+#       Browser available to your users.
+#
+################################################################################
+use Data::Dumper;
+use X11::Protocol;
+use Glib::Object::Introspection;
+use Arctica::Core::JABus::Socket;
+use Arctica::Core::eventInit qw( genARandom BugOUT );
+
+my $ACO = Arctica::Core::eventInit->new({
+	app_name=>'arctica-tekicmd',
+	app_class =>'tekicmd',
+	app_version=>'0.0.1.2'});
+
+
+my %args;
+foreach my $arg (@ARGV) {
+	if ($arg =~ /-suspend/) {
+		if ($args{'do'} eq "") {
+			$args{'do'} = "suspend";
+		} else {
+			die("Only do one action....");
+		}
+	} elsif ($arg =~ /-resume/) {
+		if ($args{'do'} eq "") {
+			$args{'do'} = "resume";
+		} else {
+			die("Only do one action....");
+		}
+	} elsif ($arg =~ /-clientnxwid\=([\da-zA-Z]{4,})/) {
+		my $wid = $1;
+		if ($args{'do'} eq "") {
+			$args{'do'} = "clientnxwid";
+			$args{'val'} = $wid;
+		} else {
+			die("Only do one action....");
+		}
+	} elsif ($arg =~ /-audiobitrate\=([\d\:]{1,})/) {
+		my $bitrate = $1;
+		if ($args{'do'} eq "") {
+			$args{'do'} = "audiobitrate";
+			$args{'val'} = $bitrate;
+		} else {
+			die("Only do one action....");
+		}
+	} elsif ($arg =~ /-display\=(\:[\d\.]{1,})/) {
+		my $display_no = $1;
+		if ($display_no) {
+			$args{'display'} = $display_no;
+		}
+	}
+}
+
+
+
+if ($args{'display'} eq "") {
+	if ($ENV{'DISPLAY'}) {
+		$args{'display'} = $ENV{'DISPLAY'};
+	} else {
+			die("No DISPLAY env or cmd line '-display'?!");
+	}
+} else {
+	$ENV{'DISPLAY'} = $args{'display'};
+}
+
+
+if ($args{'do'} eq "") {
+	die("Do WHAT?");
+} 
+
+
+my $teki_socket_id = get_tmp_local_socket_id();
+BugOUT(9,"Got TeKi Socket ID: $teki_socket_id");
+
+
+my $teki_socket = Arctica::Core::JABus::Socket->new($ACO,{
+		type	=>	"unix",
+		destination =>	"local",
+		is_client => 1,
+		connect_to => $teki_socket_id,
+		handle_in_dispatch => {
+				tekicmd => \&got_response,
+		},
+		hooks => {
+			on_ready => \&do_something,
+		},
+	});
+
+
+$ACO->{'Glib'}{'MainLoop'}->run;
+
+
+sub do_something {
+	if ($args{'do'} ne "") {
+		BugOUT(9,"Sending: $args{'do'} $args{'val'}");
+		$teki_socket->client_send('tekicmd',{
+			do => $args{'do'},
+			val => $args{'val'},
+		});
+		exit 0;#FIXME.... in the future we may want to hang around for something to return...
+	} else {
+		die("This Should never ever happen, EVER!");
+	}
+}
+
+
+################################################################################
+# FIX ME! TMP STUFF, REMOVE IN FINAL VERSION!
+sub got_response {
+	print Dump(@_);
+}
+
+
+sub get_tmp_local_socket_id {
+	
+	my $x11 = X11::Protocol->new() or die("Are we even in an X11 environment?");
+	my ($teki_sock_id,undef) = $x11 ->GetProperty($x11->root, $x11->atom('TEKI_SOCKET'), $x11->atom('STRING'), 0, ~0, 0);
+		if ($teki_sock_id =~ /^([0-9a-zA-Z]{16,})$/) {
+			$teki_sock_id = $1;
+			return $teki_sock_id;
+		} else {
+			die("No Telekinesis service connected to display '$ENV{'DISPLAY'}'?");
+		}
+
+}
