@@ -85,6 +85,7 @@ sub new {
 		aobject_name => "Telekinesis_Server",
 		available_services => {
 			multimedia => 1,
+			webcontent => 1,
 		},
 	};
 	$self->{'session_id'} = genARandom('id');
@@ -116,6 +117,7 @@ sub c2s_service_neg {
 			step => 2,
 			services => {
 				multimedia => 1,
+				webcontent => 1,
 			},
 		});
 	} elsif ($jdata->{'step'} eq 3) {
