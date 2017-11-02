@@ -113,13 +113,24 @@ sub c2s_service_neg {
 # If server side is newest, serverside must know if we are compatible.
 # If client side is newest, we expect client to tell us if we have a compatible pair.
 		BugOUT(9,"Service Negotiation Step 1");
-		$_[3]->server_send($_[2],'srvcneg',{
-			step => 2,
-			services => {
-				multimedia => 1,
-				webcontent => 1,
-			},
+		warn("WAITING FOR CLIENTNXWID VIA TEKICMD!!!!!");
+		Glib::Timeout->add(100, sub {
+			if ($self->{'nx'}{'clientnxwid'} =~ /^([\da-zA-Z]{4,})$/) {
+				BugOUT(8,"Ok... Got clientnxwid!");
+				$self->tekicli_send('srvcneg',{
+					step => 2,
+					services => {
+						multimedia => 1,
+						webcontent => 1,
+					},
+					clientnxwid => $self->{'nx'}{'clientnxwid'},
+				});
+				return 0;
+			} else {
+				return 1;
+			}
 		});
+
 	} elsif ($jdata->{'step'} eq 3) {
 		BugOUT(9,"Service Negotiation Step 3");
 		# By this point we should be done negotiating... 
@@ -256,6 +267,15 @@ sub _app_reg {
 
 	} else {
 		$bself->server_terminate_client_conn($sclient_id);
+	}
+}
+
+sub set_client_nxwid {
+	my $self = $_[0];
+	if ($_[1] =~ /([\da-zA-Z]{4,})/) {
+		$self->{'nx'}{'clientnxwid'} = $1;
+	} else {
+		$self->{'nx'}{'clientnxwid'} = 0;
 	}
 }
 
