@@ -65,18 +65,19 @@ my $ACO = Arctica::Core::eventInit->new({
 
 
 my %args;
+
 foreach my $arg (@ARGV) {
 	if ($arg =~ /-suspend/) {
 		if ($args{'do'} eq "") {
 			$args{'do'} = "suspend";
 		} else {
-			die("Only do one action....");
+			BugOUT(0,"Only do one action....");
 		}
 	} elsif ($arg =~ /-resume/) {
 		if ($args{'do'} eq "") {
 			$args{'do'} = "resume";
 		} else {
-			die("Only do one action....");
+			BugOUT(0,"Only do one action....");
 		}
 	} elsif ($arg =~ /-clientnxwid\=([\da-zA-Z]{4,})/) {
 		my $wid = $1;
@@ -84,7 +85,7 @@ foreach my $arg (@ARGV) {
 			$args{'do'} = "clientnxwid";
 			$args{'val'} = $wid;
 		} else {
-			die("Only do one action....");
+			BugOUT(0,"Only do one action....");
 		}
 	} elsif ($arg =~ /-audiobitrate\=([\d\:]{1,})/) {
 		my $bitrate = $1;
@@ -92,7 +93,7 @@ foreach my $arg (@ARGV) {
 			$args{'do'} = "audiobitrate";
 			$args{'val'} = $bitrate;
 		} else {
-			die("Only do one action....");
+			BugOUT(0,"Only do one action....");
 		}
 	} elsif ($arg =~ /-display\=(\:[\d\.]{1,})/) {
 		my $display_no = $1;
@@ -108,7 +109,7 @@ if ($args{'display'} eq "") {
 	if ($ENV{'DISPLAY'}) {
 		$args{'display'} = $ENV{'DISPLAY'};
 	} else {
-			die("No DISPLAY env or cmd line '-display'?!");
+			BugOUT(0,"No DISPLAY env or cmd line '-display'?!");
 	}
 } else {
 	$ENV{'DISPLAY'} = $args{'display'};
@@ -116,7 +117,7 @@ if ($args{'display'} eq "") {
 
 
 if ($args{'do'} eq "") {
-	die("Do WHAT?");
+	BugOUT(0,"Do WHAT?");
 } 
 
 
@@ -148,9 +149,10 @@ sub do_something {
 			do => $args{'do'},
 			val => $args{'val'},
 		});
+		sleep 1;
 		exit 0;#FIXME.... in the future we may want to hang around for something to return...
 	} else {
-		die("This Should never ever happen, EVER!");
+		BugOUT(0,"This Should never ever happen, EVER!");
 	}
 }
 
@@ -158,19 +160,41 @@ sub do_something {
 ################################################################################
 # FIX ME! TMP STUFF, REMOVE IN FINAL VERSION!
 sub got_response {
-	print Dump(@_);
+#	print Dump(@_);
 }
 
 
-sub get_tmp_local_socket_id {
-	
-	my $x11 = X11::Protocol->new() or die("Are we even in an X11 environment?");
-	my ($teki_sock_id,undef) = $x11 ->GetProperty($x11->root, $x11->atom('TEKI_SOCKET'), $x11->atom('STRING'), 0, ~0, 0);
-		if ($teki_sock_id =~ /^([0-9a-zA-Z]{16,})$/) {
-			$teki_sock_id = $1;
-			return $teki_sock_id;
-		} else {
-			die("No Telekinesis service connected to display '$ENV{'DISPLAY'}'?");
-		}
 
+sub get_tmp_local_socket_id {
+	my $retry_cnt = 0;
+	my $x11;
+	while ($retry_cnt < 25) {
+		$retry_cnt++;
+
+		eval {
+			$x11 = X11::Protocol->new($ENV{'DISPLAY'});
+		} or warn("NO X11 SERVER '$ENV{'DISPLAY'}'?");
+
+	BugOUT(9,"Getting local_socket_id... POST EVAL");
+		if ($x11) {
+			my $retry_cnt2 = 0;
+			while ($retry_cnt2 < 25) {
+				$retry_cnt2++;
+				my ($teki_sock_id,undef) = $x11->GetProperty($x11->root, $x11->atom('TEKI_SOCKET'), $x11->atom('STRING'), 0, ~0, 0);
+				if ($teki_sock_id =~ /^([0-9a-zA-Z]{16,})$/) {
+					$teki_sock_id = $1;
+					return $teki_sock_id;
+				} 
+				warn("No Telekinesis service connected to display '$ENV{'DISPLAY'}'? Retrying in a bit...");
+				sleep 1;		
+#				else {die("No Telekinesis service connected to display '$ENV{'DISPLAY'}'?");}
+			}
+		} 
+
+
+		BugOUT(9,"Retrying in a bit...");
+		sleep 1;
+
+	}
+	BugOUT(0,"We may have given up on contacting X11 server '$ENV{'DISPLAY'}'");
 }
